@@ -16,6 +16,7 @@ var lex = function(s) {
     var stream = [];
     while (!lexer.eof) {
         lexer.next();
+        if (lexer.token === "string") lexer.lexeme = lexer.lexeme.slice(1, lexer.lexeme.length - 1);
         stream.push({ type: lexer.token, value: lexer.lexeme });
     }
     return stream;
@@ -97,7 +98,6 @@ var assert_signature = function(fn, args) {
     }
     for (var i = 0, l = args.length; i < l; i++) {
         if (sig[i] !== "*" && !is(sig[i], args[i])) {
-            console.log(args[i]);
             throw "function " + fn + " takes " + sig[i] + " as argument " +
                 (i+1) + ", " + type_name(args[i]) + " given";
         }
@@ -206,6 +206,12 @@ var primitives = {
         args = args.map(evaluate);
         console.log.apply(null, args.map(pprint));
         return [];
+    },
+    "load": function (args) {
+        assert_signature("load", args, "*");
+        var val = evaluate(args[0]);
+        if (!is_string(val)) throw "load takes a string argument, " + val.type + " given";
+        return load(lex(val.value))[0];
     }
 };
 
