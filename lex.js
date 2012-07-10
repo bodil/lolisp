@@ -82,9 +82,9 @@ var Lexer = function Lexer(string, definitions) {
 };
 
 var grammar = {
-    symbol: { regexp: /^[a-zA-Z_+*/=-]+[a-zA-Z0-9_+*/=|-]*$/, skip: false },
+    number: { regexp: /^[1-9-]*[0-9][0-9./]*$/, skip: false },
+    symbol: { regexp: /^[a-zA-Z_+*/=-]+[a-zA-Z0-9_+*/=|?<>-]*$/, skip: false },
     string: { regexp: /^\"[^\"]*\"$/, skip: false },
-    integer: { regexp: /^[1-9]*\d+$/, skip: false },
     quote: { regexp: /^'$/, skip: false },
     lparen: { regexp: /^\($/, skip: false },
     rparen: { regexp: /^\)$/, skip: false },

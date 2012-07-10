@@ -1,5 +1,6 @@
 var types = require("./types");
 var load = require("./load");
+var math = require("./math");
 var _ = require("underscore");
 
 var assert_signature = function assert_signature(fn, args) {
@@ -17,7 +18,7 @@ var assert_signature = function assert_signature(fn, args) {
 };
 
 module.exports = function primitives(rt) {
-    return {
+    var p = {
         "quote": function(args) {
             assert_signature("quote", args, "*");
             return args[0];
@@ -113,4 +114,7 @@ module.exports = function primitives(rt) {
             return load(val.value)[0];
         }
     };
+
+    _.extend(p, math(rt));
+    return p;
 };

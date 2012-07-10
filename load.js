@@ -31,8 +31,8 @@ module.exports = function load(s) {
             break;
         default:
             top.push((last.type === "quote")
-                     ? [ types.mksymbol("quote"), token ]
-                     : token);
+                     ? [ types.mksymbol("quote"), types.token_to_type(token) ]
+                     : types.token_to_type(token));
             break;
         }
         last = token;
