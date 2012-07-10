@@ -25,6 +25,8 @@ module.exports = function rt() {
             for (var i = rt.scope.length - 1; i >= 0; i--) {
                 if (rt.scope[i][exp.value]) return rt.scope[i][exp.value];
             }
+            if (rt.primitives[exp.value] !== undefined)
+                return types.mkprimitive(exp.value);
             throw "name " + exp.value + " is undefined";
         } else return exp;
     };

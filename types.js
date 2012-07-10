@@ -27,6 +27,10 @@ types.is_function = exports.is_function = function is_function(i) {
     return types.is_atom(i) && i.type === "function";
 };
 
+types.is_primitive = exports.is_primitive = function is_function(i) {
+    return types.is_atom(i) && i.type === "primitive";
+};
+
 exports.is = function is(type , i) {
     return types["is_" + type](i);
 };
@@ -37,6 +41,7 @@ exports.type_name = function type_name(i) {
     if (types.is_number(i)) return "number";
     if (types.is_string(i)) return "string";
     if (types.is_function(i)) return "function";
+    if (types.is_primitive(i)) return "primitive";
     return "unknown";
 };
 
@@ -52,6 +57,10 @@ exports.token_to_type = function token_to_type(token) {
 
 exports.mksymbol = function mksymbol(name) {
     return { type: "symbol", value: name };
+};
+
+exports.mkprimitive = function mkprimitive(name) {
+    return { type: "primitive", value: name };
 };
 
 exports.js_to_type = function js_to_type(obj) {
@@ -74,6 +83,8 @@ exports.js_to_type = function js_to_type(obj) {
 exports.pprint = function pprint(s) {
     if (types.is_function(s))
         return "(lambda " + pprint(s.sig) + " " + s.value.map(pprint).join(" ") + ")";
+    if (types.is_primitive(s))
+        return "<primitive " + s.value + ">";
     if (types.is_number(s))
         return SchemeNumber.fn["number->string"](s.value);
     if (types.is_string(s))
