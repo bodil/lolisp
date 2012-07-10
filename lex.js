@@ -1,4 +1,4 @@
-module.exports = function(string, definitions) {
+var Lexer = function Lexer(string, definitions) {
     var index = 0;
     var length = 1;
     var arrayPosition = -1;
@@ -79,4 +79,24 @@ module.exports = function(string, definitions) {
             }
         }
     };
+};
+
+var grammar = {
+    symbol: { regexp: /^[a-zA-Z_+*/=-]+[a-zA-Z0-9_+*/=|-]*$/, skip: false },
+    string: { regexp: /^\"[^\"]*\"$/, skip: false },
+    integer: { regexp: /^[1-9]*\d+$/, skip: false },
+    quote: { regexp: /^'$/, skip: false },
+    lparen: { regexp: /^\($/, skip: false },
+    rparen: { regexp: /^\)$/, skip: false },
+    whitespace: { regexp: /^[\t \n,]$/, skip: true }
+};
+
+module.exports = function lex(s) {
+    var lexer = new Lexer(s, grammar);
+    var stream = [];
+    while (!lexer.eof) {
+        lexer.next();
+        stream.push({ type: lexer.token, value: lexer.lexeme });
+    }
+    return stream;
 };
