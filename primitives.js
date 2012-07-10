@@ -1,4 +1,5 @@
 var types = require("./types");
+var load = require("./load");
 var _ = require("underscore");
 
 var assert_signature = function assert_signature(fn, args) {
@@ -9,7 +10,6 @@ var assert_signature = function assert_signature(fn, args) {
     }
     for (var i = 0, l = args.length; i < l; i++) {
         if (sig[i] !== "*" && !types.is(sig[i], args[i])) {
-            console.log(args[i]);
             throw "function " + fn + " takes " + sig[i] + " as argument " +
                 (i+1) + ", " + types.type_name(args[i]) + " given";
         }
@@ -99,10 +99,18 @@ module.exports = function primitives(rt) {
             return { type: "function", sig: sig, value: body };
         },
 
-        "print": function (args) {
+        "print": function(args) {
             args = args.map(rt.eval);
             console.log.apply(null, args.map(types.pprint));
             return [];
+        },
+
+        "load": function(args) {
+            assert_signature("load", args, "*");
+            var val = rt.eval(args[0]);
+            if (!types.is_string(val))
+                throw "load takes a string argument, " + val.type + " given";
+            return load(val.value)[0];
         }
     };
 };
