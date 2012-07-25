@@ -1,0 +1,25 @@
+(define assert
+  (lambda (form)
+    (cond ((not (eval form))
+           (print "Assertion failed:" form)))))
+
+;; Atomicity
+(assert '(atom 31337))
+(assert '(atom "ohai"))
+(assert '(atom ()))
+(assert '(not (atom '(1 3 3 7))))
+
+;; Equality
+(assert '(= 1 1))
+(assert '(= 1 1337/1337))
+(assert '(not (= 1 2)))
+(assert '(not (= 1 1.0)))
+(assert '(= "foo" "foo"))
+(assert '(not (= "foo" "bar")))
+(assert '(= '(1 2 3) '(1 2 3)))
+(assert '(not (= '(1 2 3) '(1 2))))
+(assert '(= () ()))
+(assert '(= 'omg-a-symbol 'omg-a-symbol))
+(assert '(not (= 'omg-a-symbol 'omg-another-symbol)))
+(assert '(not (= 1337 "1337")))
+(assert '(not (= 'symbol "symbol")))
