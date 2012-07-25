@@ -32,12 +32,19 @@ module.exports = function rt() {
   };
 
   rt.invoke = function invoke(func, args) {
-    var closure = {}, rv;
+    var closure = {}, rv,
+        rest = func.sig.map(function(i) { return i.value; }).indexOf("&");
 
-    if (args.length !== func.sig.length)
+    if (rest < 0 && args.length !== func.sig.length)
       throw types.type_name(func) + " takes " + func.sig.length + " arguments, " + args.length + " given";
-    for (var i = 0, l = args.length; i < l; i++)
+    if (rest >= 0 && args.length < rest)
+      throw types.type_name(func) + " takes at least " + rest + " arguments, " + args.length + " given";
+    if (rest >= 0) {
+      args = args.slice(0, rest).concat([args.slice(rest)]);
+    }
+    for (var i = 0, l = args.length; i < l && func.sig[i].value !== "&"; i++)
       closure[func.sig[i].value] = args[i];
+    if (rest >= 0) closure[func.sig[rest+1].value] = args[rest];
     rt.scope.push(closure);
     for (i = 0, l = func.value.length; i < l; i++)
       rv = rt.exec(func.value[i]);

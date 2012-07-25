@@ -44,8 +44,9 @@ module.exports = function primitives(rt) {
       return unquote(args[0]);
     },
 
-    "unquote": function() {
-      throw "you can't use unquote outside of quote";
+    "unquote": function(args) {
+      assert_signature("unquote", args, "*");
+      return rt.eval(args[0]);
     },
 
     "unquote-splice": function() {
@@ -175,9 +176,6 @@ module.exports = function primitives(rt) {
     "apply": function(args) {
       assert_signature("apply", args, "*", "*");
       args = args.map(rt.eval);
-      // if (!types.is_function(args[0]))
-      //   throw "argument 1 of apply must resolve to a function, is " +
-        types.type_name(args[0]);
       if (!types.is_list(args[1]))
         throw "argument 2 of apply must resolve to a list, is " + types.type_name(args[1]);
       return rt.eval([args[0]].concat(args[1]));
