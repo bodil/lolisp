@@ -79,7 +79,7 @@ module.exports = function primitives(rt) {
             for (i = 0, l = args.length, arg = args[i]; i < l; arg = args[++i]) {
                 test = rt.eval(arg[0]);
                 if (!types.is_symbol(test) || (test.value !== "true" && test.value !== "false"))
-                    throw "expr " + types.pprint(arg[0]) + " does not rt.eval to a boolean";
+                    throw "expr " + types.pprint(arg[0]) + " does not evaluate to a boolean";
                 if (test.value === "true") {
                     for (var j = 1, m = arg.length, stm = arg[j]; j < m; stm = arg[++j]) {
                         rv = rt.eval(stm);
