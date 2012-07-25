@@ -3,12 +3,8 @@ var types = require("./types");
 var load = require("./load");
 var rt = require("./rt")();
 
-var argv = require("optimist").check(function(argv) {
-  if (argv._.length > 1) throw "One file at a time!";
-}).usage("Run you a lisp!\nUsage: $0 [source-file]").argv;
-
-if (argv._.length > 0) {
-  var ast = load(fs.readFileSync(argv._[0], "utf-8"));
+var loadFile = function loadFile(fn) {
+  var ast = load(fs.readFileSync(fn, "utf-8"));
   for (var i = 0, l = ast.length, stm = ast[0]; i < l; stm = ast[++i]) {
     try {
       rt.exec(stm);
@@ -18,6 +14,16 @@ if (argv._.length > 0) {
       process.exit(1);
     }
   }
+};
+
+loadFile(__dirname + "/rt.loli");
+
+var argv = require("optimist").check(function(argv) {
+  if (argv._.length > 1) throw "One file at a time!";
+}).usage("Run you a lisp!\nUsage: $0 [source-file]").argv;
+
+if (argv._.length > 0) {
+  loadFile(argv._[0]);
   process.exit(0);
 }
 

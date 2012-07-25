@@ -1,0 +1,6 @@
+(define defmacro
+  (macro (name args & body)
+    '(define ~name (macro ~args ~@body))))
+
+(defmacro defn (name args & body)
+  '(define ~name (lambda ~args ~@body)))

@@ -32,5 +32,7 @@
 (is (= 5 ((lambda (a b) (+ a b)) 2 3)))
 (is (= 9 ((lambda (& nums) (apply + nums)) 2 3 4)))
 (is (= 9 ((lambda (a & nums) (apply + (cons a nums))) 2 3 4)))
+(defn test-defn (a & nums) (apply + (cons a nums)))
+(is (= 9 (test-defn 2 3 4)))
 
 (print "All tests done.")
