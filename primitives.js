@@ -115,6 +115,19 @@ module.exports = function primitives(rt) {
             if (!types.is_string(val))
                 throw "load takes a string argument, " + val.type + " given";
             return load(val.value)[0];
+        },
+
+        "eval": function(args) {
+            assert_signature("eval", args, "*");
+            return rt.eval(rt.eval(args[0]));
+        },
+
+        "not": function(args) {
+            assert_signature("not", args, "*");
+            var val = rt.eval(args[0]);
+            if (!types.is_symbol(val) || (val.value !== "true" && val.value !== "false"))
+                throw "expr " + types.pprint(args[0]) + " does not evaluate to a boolean";
+            return (val.value === "true") ? rt.ns.false : rt.ns.true;
         }
     };
 
