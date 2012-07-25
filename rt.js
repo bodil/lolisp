@@ -54,10 +54,10 @@ module.exports = function rt() {
     var func = list[0];
     var args = list.slice(1);
 
-    if (types.is_symbol(func) && rt.primitives[func.value])
-      return rt.primitives[func.value](args);
-
     func = rt.eval(func);
+
+    if (types.is_primitive(func) && rt.primitives[func.value])
+      return rt.primitives[func.value](args);
 
     if (types.is_macro(func)) {
       return rt.eval(rt.invoke(func, args));

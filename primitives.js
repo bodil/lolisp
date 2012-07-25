@@ -170,8 +170,18 @@ module.exports = function primitives(rt) {
         i + " is " + types.type_name(arg);
 
       return { type: "macro", sig: sig, value: body};
-    }
+    },
 
+    "apply": function(args) {
+      assert_signature("apply", args, "*", "*");
+      args = args.map(rt.eval);
+      // if (!types.is_function(args[0]))
+      //   throw "argument 1 of apply must resolve to a function, is " +
+        types.type_name(args[0]);
+      if (!types.is_list(args[1]))
+        throw "argument 2 of apply must resolve to a list, is " + types.type_name(args[1]);
+      return rt.eval([args[0]].concat(args[1]));
+    }
   };
 
   _.extend(p, math(rt));
