@@ -18,10 +18,19 @@ var assert_signature = function assert_signature(fn, args) {
 };
 
 module.exports = function primitives(rt) {
+
+    var unquote = function unquote(v) {
+        if (types.is_list(v)) {
+            if (types.is_symbol(v[0]) && v[0].value == "unquote")
+                return rt.eval(v[1]);
+            else return v.map(unquote);
+        } else return v;
+    };
+
     var p = {
         "quote": function(args) {
             assert_signature("quote", args, "*");
-            return args[0];
+            return unquote(args[0]);
         },
 
         "define": function(args) {
@@ -130,6 +139,8 @@ module.exports = function primitives(rt) {
             return (val.value === "true") ? rt.ns.false : rt.ns.true;
         }
     };
+
+    p.unquote = p.eval;
 
     _.extend(p, math(rt));
     return p;

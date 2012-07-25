@@ -87,6 +87,7 @@ var grammar = {
     symbol: { regexp: /^[a-zA-Z_+*/=-]+[a-zA-Z0-9_+*/=|?<>-]*$/, skip: false },
     string: { regexp: /^\"[^\"]*\"$/, skip: false },
     quote: { regexp: /^'$/, skip: false },
+    unquote: { regexp: /^~$/, skip: false },
     lparen: { regexp: /^\($/, skip: false },
     rparen: { regexp: /^\)$/, skip: false },
     whitespace: { regexp: /^[\t \n,]$/, skip: true }

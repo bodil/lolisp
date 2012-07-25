@@ -15,9 +15,12 @@ module.exports = function load(s) {
             i = l;
             break;
         case "quote":
+        case "unquote":
             break;
         case "lparen":
-            top = (last.type === "quote") ? ["quote"] : [];
+            if (last.type === "quote") top = ["quote"];
+            else if (last.type === "unquote") top = ["unquote"];
+            else top = [];
             stack.push(top);
             break;
         case "rparen":
@@ -27,12 +30,18 @@ module.exports = function load(s) {
             top = stack[stack.length - 1];
             if (tmp[0] === "quote")
                 tmp = [ types.mksymbol("quote"), tmp.slice(1) ];
+            else if (tmp[0] === "unquote")
+                tmp = [ types.mksymbol("unquote"), tmp.slice(1) ];
             top.push(tmp);
             break;
         default:
-            top.push((last.type === "quote")
-                     ? [ types.mksymbol("quote"), types.token_to_type(token) ]
-                     : types.token_to_type(token));
+            if (last.type === "quote") {
+                top.push([types.mksymbol("quote"), types.token_to_type(token)]);
+            } else if (last.type === "unquote") {
+                top.push([types.mksymbol("unquote"), types.token_to_type(token)]);
+            } else {
+                top.push(types.token_to_type(token));
+            }
             break;
         }
         last = token;
