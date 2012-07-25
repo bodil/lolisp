@@ -134,7 +134,9 @@ module.exports = function primitives(rt) {
 
     "print": function(args) {
       args = args.map(rt.eval);
-      console.log.apply(null, args.map(types.pprint));
+      console.log.apply(null, args.map(function(i) {
+        return types.is_string(i) ? i.value : types.pprint(i);
+      }));
       return [];
     },
 
