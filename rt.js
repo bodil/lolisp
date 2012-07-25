@@ -31,6 +31,20 @@ module.exports = function rt() {
         } else return exp;
     };
 
+    rt.invoke = function invoke(func, args) {
+        var closure = {}, rv;
+
+        if (args.length !== func.sig.length)
+            throw types.type_name(func) + " takes " + func.sig.length + " arguments, " + args.length + " given";
+        for (var i = 0, l = args.length; i < l; i++)
+            closure[func.sig[i].value] = args[i];
+        rt.scope.push(closure);
+        for (i = 0, l = func.value.length; i < l; i++)
+            rv = rt.exec(func.value[i]);
+        rt.scope.pop();
+        return rv;
+    };
+
     rt.exec = function exec(list) {
         if (types.is_atom(list))
             return rt.eval(list);
@@ -39,24 +53,18 @@ module.exports = function rt() {
 
         var func = list[0];
         var args = list.slice(1);
-        var closure = {}, rv;
 
         if (types.is_symbol(func) && rt.primitives[func.value])
             return rt.primitives[func.value](args);
 
         func = rt.eval(func);
 
+        if (types.is_macro(func)) {
+            return rt.eval(rt.invoke(func, args));
+        }
+
         if (types.is_function(func)) {
-            if (args.length !== func.sig.length)
-                throw "function takes " + func.sig.length + " arguments, " + args.length + " given";
-            args = args.map(rt.eval);
-            for (var i = 0, l = args.length; i < l; i++)
-                closure[func.sig[i].value] = args[i];
-            rt.scope.push(closure);
-            for (i = 0, l = func.value.length; i < l; i++)
-                rv = rt.exec(func.value[i]);
-            rt.scope.pop();
-            return rv;
+            return rt.invoke(func, args.map(rt.eval));
         }
 
         throw types.pprint(func) + " is not a function, it's a " + types.type_name(func);

@@ -137,7 +137,29 @@ module.exports = function primitives(rt) {
             if (!types.is_symbol(val) || (val.value !== "true" && val.value !== "false"))
                 throw "expr " + types.pprint(args[0]) + " does not evaluate to a boolean";
             return (val.value === "true") ? rt.ns.false : rt.ns.true;
+        },
+
+        "defmacro": function(args) {
+            if (args.length < 3)
+                throw "defmacro takes at least 3 arguments, " + args.length + " given";
+            var name = args[0], sig = args[1], body = args.slice(2);
+            if (!types.is_symbol(name))
+                throw "argument 1 of defmacro must be a symbol, is " + types.type_name(name);
+            if (!types.is_list(sig))
+                throw "argument 2 of defmacro must be list, is " + types.type_name(sig);
+            for (var i = 0, l = sig.length, arg = sig[i]; i < l; arg = sig[++i])
+                if (!types.is_symbol(arg))
+                    throw "argument 2 of defmacro must be a list of symbols, but element " +
+                i + " is " + types.type_name(arg);
+
+            if (rt.primitives[name.value] !== undefined)
+                throw "defining macro " + name.value +
+                " would override a primitive";
+
+            rt.ns[name.value] = { type: "macro", sig: sig, value: body};
+            return [];
         }
+
     };
 
     p.unquote = p.eval;
