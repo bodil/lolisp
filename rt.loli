@@ -4,3 +4,21 @@
 
 (defmacro defn (name args & body)
   '(define ~name (lambda ~args ~@body)))
+
+(defn cadr (l) (car (cdr l)))
+
+(defn nil? (v) (= v ()))
+
+(defn let-fn (bindings body)
+  (cond
+   ((nil? (cdr bindings))
+    '((lambda (~(car (car bindings)))
+        ~@body)
+      ~(cadr (car bindings))))
+   (true
+    '((lambda (~(car (car bindings)))
+        ~(let-fn (cdr bindings) body))
+      ~(cadr (car bindings))))))
+
+(defmacro let (bindings & body)
+  (let-fn bindings body))

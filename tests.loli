@@ -35,4 +35,7 @@
 (defn test-defn (a & nums) (apply + (cons a nums)))
 (is (= 9 (test-defn 2 3 4)))
 
+;; Binding
+(is (= 5 (let ((a 2) (b 3)) (+ a b))))
+
 (print "All tests done.")
