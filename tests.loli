@@ -38,4 +38,7 @@
 ;; Binding
 (is (= 5 (let ((a 2) (b 3)) (+ a b))))
 
+;; Runtime library
+(is (= '(2 3 4) (map (lambda (n) (+ n 1)) '(1 2 3))))
+
 (print "All tests done.")

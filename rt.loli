@@ -22,3 +22,8 @@
 
 (defmacro let (bindings & body)
   (let-fn bindings body))
+
+(defn map (f l)
+  (cond
+   ((nil? l) l)
+   (true (cons (f (car l)) (map f (cdr l))))))
