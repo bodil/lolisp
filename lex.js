@@ -82,6 +82,7 @@ var Lexer = function Lexer(string, definitions) {
 };
 
 var grammar = {
+    comment: { regexp: /^;.*$/, skip: true },
     number: { regexp: /^[1-9-]*[0-9][0-9./]*$/, skip: false },
     symbol: { regexp: /^[a-zA-Z_+*/=-]+[a-zA-Z0-9_+*/=|?<>-]*$/, skip: false },
     string: { regexp: /^\"[^\"]*\"$/, skip: false },
