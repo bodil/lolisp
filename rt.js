@@ -19,7 +19,7 @@ module.exports = function rt() {
      * Else, return it as is.
      */
     rt.eval = function eval(exp) {
-        if (types.is_list(exp)) {
+        if (!types.is_atom(exp)) {
             return rt.exec(exp);
         } else if (types.is_symbol(exp)) {
             for (var i = rt.scope.length - 1; i >= 0; i--) {

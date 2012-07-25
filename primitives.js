@@ -20,7 +20,7 @@ var assert_signature = function assert_signature(fn, args) {
 module.exports = function primitives(rt) {
 
     var unquote = function unquote(v) {
-        if (types.is_list(v)) {
+        if (!types.is_nil(v) && types.is_list(v)) {
             if (types.is_symbol(v[0]) && v[0].value == "unquote")
                 return rt.eval(v[1]);
             else return v.map(unquote);
@@ -56,7 +56,7 @@ module.exports = function primitives(rt) {
             assert_signature("cons", args, "*", "*");
             var cons = rt.eval(args[0]);
             var list = rt.eval(args[1]);
-            if (types.is_atom(list))
+            if (!types.is_list(list))
                 throw "argument 2 of cons must resolve to a list, but is " + list.type;
             return [ cons ].concat(list);
         },
@@ -64,7 +64,7 @@ module.exports = function primitives(rt) {
         "car": function(args) {
             assert_signature("car", args, "*");
             var list = rt.eval(args[0]);
-            if (types.is_atom(list))
+            if (!types.is_list(list))
                 throw "argument 1 of car must resolve to a list, but is " + list.type;
             return (list.length) ? list[0] : [];
         },
@@ -72,7 +72,7 @@ module.exports = function primitives(rt) {
         "cdr": function(args) {
             assert_signature("cdr", args, "*");
             var list = rt.eval(args[0]);
-            if (types.is_atom(list))
+            if (!types.is_list(list))
                 throw "argument 1 of cdr must resolve to a list, but is " + list.type;
             return (list.length) ? list.slice(1) : [];
         },
@@ -80,7 +80,7 @@ module.exports = function primitives(rt) {
         "cond": function(args) {
             var test, rv;
             for (var i = 0, l = args.length, arg = args[i]; i < l; arg = args[++i]) {
-                if (types.is_atom(arg))
+                if (!types.is_list(arg))
                     throw "argument " + (i+1) + " of cond should be a list, is " + arg.type;
                 if (arg.length < 2)
                     throw "argument " + (i+1) + " of cond must have a length of >=2, is " + arg.length;
@@ -103,7 +103,7 @@ module.exports = function primitives(rt) {
             if (args.length < 2)
                 throw "lambda takes at least 2 arguments, " + args.length + " given";
             var sig = args[0], body = args.slice(1);
-            if (types.is_atom(sig))
+            if (!types.is_list(sig))
                 throw "argument 1 of lambda must be list, is " + types.type_name(sig);
             for (var i = 0, l = sig.length, arg = sig[i]; i < l; arg = sig[++i])
                 if (!types.is_symbol(arg))

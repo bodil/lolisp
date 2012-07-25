@@ -4,11 +4,15 @@ var SchemeNumber = require("./ext/schemeNumber").SchemeNumber;
 var types = {};
 
 types.is_list = exports.is_list = function is_list(i) {
-    return i instanceof Array && i.length;
+    return i instanceof Array;
+};
+
+types.is_nil = exports.is_nil = function is_nil(i) {
+    return types.is_list(i) && i.length === 0;
 };
 
 types.is_atom = exports.is_atom = function is_atom(i) {
-    return !types.is_list(i);
+    return types.is_nil(i) || !types.is_list(i);
 };
 
 types.is_symbol = exports.is_symbol = function is_symbol(i) {
@@ -31,17 +35,23 @@ types.is_primitive = exports.is_primitive = function is_function(i) {
     return types.is_atom(i) && i.type === "primitive";
 };
 
+types.is_macro = exports.is_macro = function is_macro(i) {
+    return types.is_atom(i) && i.type === "macro";
+};
+
 exports.is = function is(type , i) {
     return types["is_" + type](i);
 };
 
 exports.type_name = function type_name(i) {
+    if (types.is_nil(i)) return "nil";
     if (types.is_list(i)) return "list";
     if (types.is_symbol(i)) return "symbol";
     if (types.is_number(i)) return "number";
     if (types.is_string(i)) return "string";
     if (types.is_function(i)) return "function";
     if (types.is_primitive(i)) return "primitive";
+    if (types.is_macro(i)) return "macro";
     return "unknown";
 };
 
@@ -81,6 +91,8 @@ exports.js_to_type = function js_to_type(obj) {
 };
 
 exports.pprint = function pprint(s) {
+    if (types.is_macro(s))
+        return "<macro " + pprint(s.sig) + " " + s.value.map(pprint).join(" ") + ">";
     if (types.is_function(s))
         return "(lambda " + pprint(s.sig) + " " + s.value.map(pprint).join(" ") + ")";
     if (types.is_primitive(s))
@@ -89,6 +101,8 @@ exports.pprint = function pprint(s) {
         return SchemeNumber.fn["number->string"](s.value);
     if (types.is_string(s))
         return '"' + s.value + '"';
+    if (types.is_nil(s))
+        return "()";
     if (types.is_atom(s))
         return s.value;
     var out = [];
