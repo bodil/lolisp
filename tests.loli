@@ -23,3 +23,7 @@
 (is (not (= 'omg-a-symbol 'omg-another-symbol)))
 (is (not (= 1337 "1337")))
 (is (not (= 'symbol "symbol")))
+
+;; Reader macro characters
+(is (= '(1 2 3) '(1 2 ~(+ 1 2))))
+(is (= '(1 2 3) '(~@(quote (1 2 3)))))

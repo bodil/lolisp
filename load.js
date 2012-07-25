@@ -19,7 +19,9 @@ module.exports = function load(s) {
       break;
     case "lparen":
       if (last.type === "quote") top = ["quote"];
-      else if (last.type === "unquote") top = ["unquote"];
+      else if (last.type === "unquote") {
+        top = [ (last.value === "~@") ? "unquote-splice" : "unquote" ];
+      }
       else top = [];
       stack.push(top);
       break;
@@ -32,13 +34,15 @@ module.exports = function load(s) {
         tmp = [ types.mksymbol("quote"), tmp.slice(1) ];
       else if (tmp[0] === "unquote")
         tmp = [ types.mksymbol("unquote"), tmp.slice(1) ];
+      else if (tmp[0] === "unquote-splice")
+        tmp = [ types.mksymbol("unquote-splice"), tmp.slice(1) ];
       top.push(tmp);
       break;
     default:
       if (last.type === "quote") {
         top.push([types.mksymbol("quote"), types.token_to_type(token)]);
       } else if (last.type === "unquote") {
-        top.push([types.mksymbol("unquote"), types.token_to_type(token)]);
+        top.push([types.mksymbol((last.value === "~@") ? "unquote-splice" : "unquote"), types.token_to_type(token)]);
       } else {
         top.push(types.token_to_type(token));
       }

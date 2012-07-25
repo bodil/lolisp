@@ -19,11 +19,22 @@ var assert_signature = function assert_signature(fn, args) {
 
 module.exports = function primitives(rt) {
 
+  var is_splice = function is_splice(v) {
+    return !types.is_nil(v) && types.is_list(v) &&
+      types.is_symbol(v[0]) && v[0].value == "unquote-splice";
+  };
+
   var unquote = function unquote(v) {
     if (!types.is_nil(v) && types.is_list(v)) {
       if (types.is_symbol(v[0]) && v[0].value == "unquote")
         return rt.eval(v[1]);
-      else return v.map(unquote);
+      var i, it, out = [];
+      for (i = 0, it = v[0]; i < v.length; it = v[++i]) {
+        if (is_splice(it)) {
+          out = out.concat(rt.eval(it[1]));
+        } else out.push(unquote(it));
+      }
+      return out;
     } else return v;
   };
 
@@ -31,6 +42,14 @@ module.exports = function primitives(rt) {
     "quote": function(args) {
       assert_signature("quote", args, "*");
       return unquote(args[0]);
+    },
+
+    "unquote": function() {
+      throw "you can't use unquote outside of quote";
+    },
+
+    "unquote-splice": function() {
+      throw "you can't use unquote-splice outside of quote";
     },
 
     "define": function(args) {
@@ -154,8 +173,6 @@ module.exports = function primitives(rt) {
     }
 
   };
-
-  p.unquote = p.eval;
 
   _.extend(p, math(rt));
   return p;
