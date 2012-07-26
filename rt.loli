@@ -6,6 +6,7 @@
   '(define ~name (lambda ~args ~@body)))
 
 (defn cadr (l) (car (cdr l)))
+(defn cddr (l) (cdr (cdr l)))
 
 (defn nil? (v) (= v ()))
 
@@ -24,6 +25,14 @@
   (let-fn bindings body))
 
 (defn map (f l)
-  (cond
-   ((nil? l) l)
-   (true (cons (f (car l)) (map f (cdr l))))))
+  (foldl (lambda (acc e) (cons (f e) acc)) () l))
+
+(defn filter (f l)
+  (foldl (lambda (acc e)
+           (cond ((f e) (cons e acc))
+                 (true acc)))
+         () l))
+
+(defn reduce (f l & acc)
+  (cond ((nil? acc) (foldr f (f (car l) (cadr l)) (cddr l)))
+        (true (foldr f (car acc) l))))

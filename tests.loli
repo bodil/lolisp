@@ -38,7 +38,9 @@
 ;; Binding
 (is (= 5 (let ((a 2) (b 3)) (+ a b))))
 
-;; Runtime library
+;; Reducers
 (is (= '(2 3 4) (map (lambda (n) (+ n 1)) '(1 2 3))))
+(is (= '(2 4) (filter even? '(1 2 3 4))))
+(is (= 6 (reduce + '(1 2 3))))
 
 (print "All tests done.")

@@ -181,6 +181,30 @@ module.exports = function primitives(rt) {
       if (!types.is_list(args[1]))
         throw "argument 2 of apply must resolve to a list, is " + types.type_name(args[1]);
       return rt.eval([args[0]].concat(args[1]));
+    },
+
+    "foldr": function(args) {
+      assert_signature("foldr", args, "*", "*", "*");
+      args = args.map(rt.eval);
+      if (!types.is_list(args[2]))
+        throw "argument 3 of foldr must resolve to a list, is " + types.type_name(args[2]);
+      var i, l = args[2], len = l.length, acc = args[1];
+      for (i = 0; i < len; i++) {
+        acc = rt.invoke(args[0], [acc, l[i]]);
+      }
+      return acc;
+    },
+
+    "foldl": function(args) {
+      assert_signature("foldl", args, "*", "*", "*");
+      args = args.map(rt.eval);
+      if (!types.is_list(args[2]))
+        throw "argument 3 of foldl must resolve to a list, is " + types.type_name(args[2]);
+      var i, l = args[2], acc = args[1];
+      for (i = l.length - 1; i >= 0; i--) {
+        acc = rt.invoke(args[0], [acc, l[i]]);
+      }
+      return acc;
     }
   };
 

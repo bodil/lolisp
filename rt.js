@@ -32,6 +32,9 @@ module.exports = function rt() {
   };
 
   rt.invoke = function invoke(func, args) {
+    if (types.is_primitive(func))
+      return rt.primitives[func.value](args);
+
     var closure = {}, rv,
         rest = func.sig.map(function(i) { return i.value; }).indexOf("&");
 
