@@ -76,25 +76,34 @@ module.exports = function primitives(rt) {
       assert_signature("cons", args, "*", "*");
       var cons = rt.eval(args[0]);
       var list = rt.eval(args[1]);
-      if (!types.is_list(list))
-        throw "argument 2 of cons must resolve to a list, but is " + list.type;
-      return [ cons ].concat(list);
+      if (types.is_list(list))
+        return [cons].concat(list);
+      if (types.is_string(list)) {
+        if (!types.is_string(cons))
+          throw "you can only cons strings onto strings, but argument 1 of cons is " + cons.type;
+        return types.js_to_type(cons.value + list.value);
+      }
+      throw "argument 2 of cons must resolve to a list or a string, but is " + list.type;
     },
 
     "car": function(args) {
       assert_signature("car", args, "*");
       var list = rt.eval(args[0]);
-      if (!types.is_list(list))
-        throw "argument 1 of car must resolve to a list, but is " + list.type;
-      return (list.length) ? list[0] : [];
+      if (types.is_list(list))
+        return (list.length) ? list[0] : [];
+      if (types.is_string(list))
+        return types.js_to_type(list.value[0]);
+      throw "argument 1 of car must resolve to a list or a string, but is " + list.type;
     },
 
     "cdr": function(args) {
       assert_signature("cdr", args, "*");
       var list = rt.eval(args[0]);
-      if (!types.is_list(list))
-        throw "argument 1 of cdr must resolve to a list, but is " + list.type;
-      return (list.length) ? list.slice(1) : [];
+      if (types.is_list(list))
+        return (list.length) ? list.slice(1) : [];
+      if (types.is_string(list))
+        return types.js_to_type(list.value.slice(1));
+      throw "argument 1 of cdr must resolve to a list or a string, but is " + list.type;
     },
 
     "cond": function(args) {

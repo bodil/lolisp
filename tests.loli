@@ -44,4 +44,9 @@
 (is (= '(2 4) (filter even? '(1 2 3 4))))
 (is (= 6 (reduce + '(1 2 3))))
 
+;; Strings
+(is (= "ohai" (cons "o" "hai")))
+(is (= "o" (car "ohai")))
+(is (= "hai" (cdr "ohai")))
+
 (print "All tests done.")
