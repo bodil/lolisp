@@ -1,5 +1,7 @@
 var types = require("./types");
 var primitives = require("./primitives");
+var load = require("./load");
+var fs = require("fs");
 
 module.exports = function rt() {
   var rt = {};
@@ -81,6 +83,20 @@ module.exports = function rt() {
   };
 
   rt.primitives = primitives(rt);
+
+  rt.loadFile = function loadFile(fn) {
+    var ast = load(fs.readFileSync(fn, "utf-8"));
+    for (var i = 0, l = ast.length, stm = ast[0]; i < l; stm = ast[++i]) {
+      try {
+        rt.exec(stm);
+      } catch (e) {
+        process.stdout.write("*** In form: " + types.pprint(stm) +
+                             "\n*** " + e + "\n");
+        return false;
+      }
+    }
+    return true;
+  };
 
   return rt;
 };

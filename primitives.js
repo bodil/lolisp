@@ -205,6 +205,14 @@ module.exports = function primitives(rt) {
         acc = rt.invoke(args[0], [acc, l[i]]);
       }
       return acc;
+    },
+
+    "load-file": function(args) {
+      assert_signature("load-file", args, "*");
+      args = args.map(rt.eval);
+      if (!types.is_string(args[0]))
+        throw "argument 1 of load-file must resolve to a string, is " + types.type_name(args[2]);
+      return rt.loadFile(args[0].value) ? rt.ns.true : rt.ns.false;
     }
   };
 
