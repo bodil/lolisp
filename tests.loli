@@ -1,8 +1,3 @@
-(define is
-  (macro (form)
-    '(cond ((not ~form)
-            (print "Assertion failed:" (quote ~form))))))
-
 ;; Atomicity
 (is (atom 31337))
 (is (atom "ohai"))

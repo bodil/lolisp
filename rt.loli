@@ -1,3 +1,5 @@
+;; def* forms of macro and lambda
+
 (define defmacro
   (macro (name args & body)
     '(define ~name (macro ~args ~@body))))
@@ -5,10 +7,16 @@
 (defmacro defn (name args & body)
   '(define ~name (lambda ~args ~@body)))
 
+;; c[a|d]+r
+
 (defn cadr (l) (car (cdr l)))
 (defn cddr (l) (cdr (cdr l)))
 
+;; assertion functions
+
 (defn nil? (v) (= v ()))
+
+;; let
 
 (defn let-fn (bindings body)
   (cond
@@ -24,6 +32,8 @@
 (defmacro let (bindings & body)
   (let-fn bindings body))
 
+;; map/reduce
+
 (defn map (f l)
   (foldl (lambda (acc e) (cons (f e) acc)) () l))
 
@@ -36,3 +46,10 @@
 (defn reduce (f l & acc)
   (cond ((nil? acc) (foldr f (f (car l) (cadr l)) (cddr l)))
         (true (foldr f (car acc) l))))
+
+;; testing
+
+(define is
+  (macro (form)
+    '(cond ((not ~form)
+            (print "Assertion failed:" (quote ~form))))))
