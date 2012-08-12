@@ -258,7 +258,8 @@ class Primitives(dict):
 def signature_fixture():
   from rt import RT
   rt = RT()
-  invoke = lambda func, args: func(rt.primitives, args)
+  prims = Primitives(rt)
+  invoke = lambda func, args: func(prims, rt.ns, args)
   invoke.rt = rt
   return invoke
 

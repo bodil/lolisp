@@ -45,7 +45,7 @@ def load(stream):
 
 def test_load_empty():
   sexp = load("(())")
-  assert repr(sexp) == "((()))"
+  assert repr(sexp) == "((nil))"
 
 def test_load_mixed():
   sexp = load("(a b c (1 2 3) \"foo\")")
