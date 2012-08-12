@@ -108,5 +108,3 @@
 (is (= 1337 @test-future))
 (define test-failing-future (future really-not-defined))
 (is (= 'failed @test-failing-future))
-
-(print "All tests done.")
