@@ -103,14 +103,14 @@ def test_is_nil():
   assert not is_nil(Type("string", "ohai"))
   assert not is_nil(cons(Type("number", 1337), nil))
 
-def is_atom(i):
+def is_atomic(i):
   return is_nil(i) or isinstance(i, Type)
 
 def test_is_atom():
-  assert is_atom(nil)
-  assert is_atom(Type("string", "ohai"))
-  assert not is_atom(cons(Type("number", 1337), nil))
-  assert not is_atom("ohai")
+  assert is_atomic(nil)
+  assert is_atomic(Type("string", "ohai"))
+  assert not is_atomic(cons(Type("number", 1337), nil))
+  assert not is_atomic("ohai")
 
 def is_symbol(i):
   return isinstance(i, Type) and i.type == "symbol"

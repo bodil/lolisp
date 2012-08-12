@@ -110,7 +110,7 @@ class RT(object):
     return rv
 
   def execute(self, scope, sexp):
-    if types.is_atom(sexp):
+    if types.is_atomic(sexp):
       return self.eval(scope, sexp)
 
     if types.is_nil(sexp):

@@ -20,7 +20,7 @@ classifiers = (
   ("unquote", re.compile(r"~")),
   ("deref", re.compile(r"@")),
   ("number", re.compile(r"[1-9-]*[0-9][0-9./]*")),
-  ("symbol", re.compile(r"[a-zA-Z_+*/=<>&|?-][a-zA-Z0-9_+*/=<>&|?-]*")),
+  ("symbol", re.compile(r"[a-zA-Z_+*/=<>&|?!.-][a-zA-Z0-9_+*/=<>&|?!.-]*")),
 )
 
 def classify(token):
@@ -35,7 +35,7 @@ class Lexer(object):
       filename = stream.name
     l = shlex(stream, filename, posix = False)
     l.commenters = ";"
-    l.wordchars = l.wordchars + "+-*/=<>&|?."
+    l.wordchars = l.wordchars + "+-*/=<>&|?.!"
     l.whitespace = ", \t\r\n"
     l.escape = "\\"
     l.quotes = "\""

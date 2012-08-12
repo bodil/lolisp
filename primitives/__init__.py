@@ -148,9 +148,9 @@ class Primitives(dict):
   def unquote_splice(self, scope, args):
     raise LispException("you can't use unquote-splice outside of quote")
 
-  @signature("@any")
-  def atom(self, scope, args):
-    return types.py_to_type(types.is_atom(args[0]))
+  @signature("atomic?", "@any")
+  def atomic(self, scope, args):
+    return types.py_to_type(types.is_atomic(args[0]))
 
   @signature("@any @any")
   def cons(self, scope, args):
