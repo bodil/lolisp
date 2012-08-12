@@ -24,7 +24,7 @@
     '((lambda (~(car (car bindings)))
         ~@body)
       ~(cadr (car bindings))))
-   (true
+   (else
     '((lambda (~(car (car bindings)))
         ~(let-fn (cdr bindings) body))
       ~(cadr (car bindings))))))
@@ -37,17 +37,17 @@
 (define not
   (lambda (x)
     (cond (x false)
-          (true true))))
+          (else true))))
 
 (defmacro and (x & rest)
   (cond ((nil? rest) x)
-        (true '(let ((v ~x))
-                 (cond (v (and ~@rest)) (true v))))))
+        (else '(let ((v ~x))
+                 (cond (v (and ~@rest)) (else v))))))
 
 (defmacro or (x & rest)
   (cond ((nil? rest) x)
-        (true '(let ((v ~x))
-                 (cond (v v) (true (or ~@rest)))))))
+        (else '(let ((v ~x))
+                 (cond (v v) (else (or ~@rest)))))))
 
 ;; map/reduce
 
@@ -57,12 +57,12 @@
 (defn filter (f l)
   (foldl (lambda (acc e)
            (cond ((f e) (cons e acc))
-                 (true acc)))
+                 (else acc)))
          () l))
 
 (defn reduce (f l & acc)
   (cond ((nil? acc) (foldr f (f (car l) (cadr l)) (cddr l)))
-        (true (foldr f (car acc) l))))
+        (else (foldr f (car acc) l))))
 
 ;; testing
 
@@ -75,7 +75,7 @@
 
 (defn even? (n)
   (cond ((and (int? n) (= 0 (rem n 2))) true)
-        (true false)))
+        (else false)))
 
 (defn odd? (n)
   (not (even? n)))

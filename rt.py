@@ -24,6 +24,7 @@ class RT(object):
     self.define("nil", types.nil)
     self.define("true", types.true)
     self.define("false", types.false)
+    self.define("else", types.true)
 
     self.primitives = Primitives(self)
     import primitives.math
