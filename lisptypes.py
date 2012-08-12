@@ -56,11 +56,13 @@ def test_conj():
   assert repr(conj(l, Type("number", 7))) == "(3 1 3 3 7)"
 
 class Type(object):
-  def __init__(self, type, value, sig = None, token = None):
+  def __init__(self, type, value, sig = None, scope = None, token = None):
     self.type = type
     self.value = value
     if sig != None:
       self.sig = sig
+    if scope != None:
+      self.scope = scope
 
   def __repr__(self):
     if self.type == "number":
@@ -166,11 +168,11 @@ def mkprimitive(name, func):
   p.invoke = func
   return p
 
-def mkfunc(sig, body):
-  return Type("function", body, sig = sig)
+def mkfunc(sig, body, scope):
+  return Type("function", body, sig = sig, scope = scope)
 
-def mkmacro(sig, body):
-  return Type("macro", body, sig = sig)
+def mkmacro(sig, body, scope):
+  return Type("macro", body, sig = sig, scope = scope)
 
 def mklist(a):
   l = nil

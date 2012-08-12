@@ -12,10 +12,10 @@ arg_parser.add_argument("file", nargs = "?", help = "Lolisp source file to run")
 args = arg_parser.parse_args()
 
 rt = RT()
-rt.load(file(os.path.join(sys.path[0], "rt.loli")))
+rt.load(rt.ns, file(os.path.join(sys.path[0], "rt.loli")))
 
 if args.file:
-  rt.load(file(args.file))
+  rt.load(rt.ns, file(args.file))
 else:
   while 1:
     print ">>> ",
@@ -25,6 +25,6 @@ else:
     sexps = load(s)
     for sexp in sexps:
       try:
-        print "=> %s" % repr(rt.execute(sexp))
+        print "=> %s" % repr(rt.execute(rt.ns, sexp))
       except LispException as e:
         print "***", str(e)

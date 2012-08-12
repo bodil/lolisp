@@ -14,9 +14,9 @@ def signature(*params):
     else:
       name = func.__name__.replace("_", "-")
       sig = params[0]
-    def wrap(self, args):
-      args = self.parse_sig(name, args, sig)
-      return func(self, args)
+    def wrap(self, scope, args):
+      args = self.parse_sig(scope, name, args, sig)
+      return func(self, scope, args)
     wrap.primitive_name = name
     wrap.__name__ = func.__name__
     return wrap
@@ -29,9 +29,9 @@ def extend(*params):
     else:
       name = func.__name__.replace("_", "-")
       sig = params[0]
-    def wrap(primitives, args):
-      args = primitives.parse_sig(name, args, sig)
-      return func(primitives, args)
+    def wrap(primitives, scope, args):
+      args = primitives.parse_sig(scope, name, args, sig)
+      return func(primitives, scope, args)
     wrap.primitive_name = name
     wrap.external = True
     wrap.__name__ = func.__name__
@@ -39,7 +39,7 @@ def extend(*params):
   return decorate
 
 def wrap_external(primitives, fn):
-  return lambda args: fn(primitives, args)
+  return lambda scope, args: fn(primitives, scope, args)
 
 def match_class(classes, name):
   for c in classes:
@@ -65,7 +65,7 @@ class Primitives(dict):
           fn = wrap_external(self, fn)
         self[name] = types.mkprimitive(name, fn)
 
-  def parse_sig(self, fn, args, signature):
+  def parse_sig(self, scope, fn, args, signature):
     if signature == "*":
       return args
 
@@ -90,7 +90,7 @@ class Primitives(dict):
       args = args[1:]
       if sig[0] == "@":
         sig = sig[1:]
-        arg = self.rt.eval(arg)
+        arg = self.rt.eval(scope, arg)
 
       if sig != "any":
         matched = False
@@ -114,71 +114,71 @@ class Primitives(dict):
                           (fn, "at least " if rest else "",
                            len(sigs) + 1, len(out)))
     if rest == "@&":
-      out.append(map(self.rt.eval, args))
+      out.append(map(lambda x: self.rt.eval(scope, x), args))
     elif rest == "&":
       out.append(args)
 
     return out
 
-  def _unquote(self, sexp):
+  def _unquote(self, scope, sexp):
     if types.is_list(sexp) and not types.is_nil(sexp):
       if types.is_symbol(sexp.car) and sexp.car.value == "unquote":
-        return self.rt.eval(sexp.cdr.car)
+        return self.rt.eval(scope, sexp.cdr.car)
 
       out = types.nil
       for el in sexp:
         if is_splice(el):
-          for splice in self.rt.eval(el.cdr.car):
+          for splice in self.rt.eval(scope, el.cdr.car):
             out = types.conj(out, splice)
         else:
-          out = types.conj(out, self._unquote(el))
+          out = types.conj(out, self._unquote(scope, el))
       return out
     else:
       return sexp
 
   @signature("any")
-  def quote(self, args):
-    return self._unquote(args[0])
+  def quote(self, scope, args):
+    return self._unquote(scope, args[0])
 
   @signature("@any")
-  def unquote(self, args):
+  def unquote(self, scope, args):
     return args[0]
 
   @signature("any")
-  def unquote_splice(self, args):
+  def unquote_splice(self, scope, args):
     raise LispException("you can't use unquote-splice outside of quote")
 
   @signature("@any")
-  def atom(self, args):
+  def atom(self, scope, args):
     return types.py_to_type(types.is_atom(args[0]))
 
   @signature("@any @any")
-  def cons(self, args):
+  def cons(self, scope, args):
     (car, cdr) = args
     return types.cons(car, cdr)
 
   @signature("@list")
-  def car(self, args):
+  def car(self, scope, args):
     if types.is_nil(args[0]):
       return types.nil
     return args[0].car
 
   @signature("@list")
-  def cdr(self, args):
+  def cdr(self, scope, args):
     if types.is_nil(args[0]):
       return types.nil
     return args[0].cdr
 
   @signature("symbol @any")
-  def define(self, args):
+  def define(self, scope, args):
     return self.rt.define(args[0], args[1])
 
   @signature("=", "@any @any")
-  def equals(self, args):
+  def equals(self, scope, args):
     return types.py_to_type(args[0] == args[1])
 
   @signature("*")
-  def cond(self, args):
+  def cond(self, scope, args):
     for i in xrange(len(args)):
       sexp = args[i]
       if not types.is_list(sexp):
@@ -187,38 +187,38 @@ class Primitives(dict):
       if types.is_nil(sexp) or types.is_nil(sexp.cdr):
         raise LispException("argument %d of cond must have a length of >= 2" % (i + 1))
     for rule in args:
-      test = self.rt.eval(rule.car)
+      test = self.rt.eval(scope, rule.car)
       if test != types.true and test != types.false:
         raise LispException("expr %s does not evaluate to a boolean" % repr(rule.car))
       if test == types.true:
         for sexp in rule.cdr:
-          rv = self.rt.eval(sexp)
+          rv = self.rt.eval(scope, sexp)
         return rv
 
     return types.nil
 
   @signature("print", "*")
-  def print_args(self, args):
-    args = map(self.rt.eval, args)
+  def print_args(self, scope, args):
+    args = map(lambda x: self.rt.eval(scope, x), args)
     args = (i.value if types.is_string(i) else repr(i) for i in args)
     print " ".join(args)
     return types.nil
 
   @signature("load", "@string")
-  def load_string(self, args):
+  def load_string(self, scope, args):
     return load(args[0].value).car
 
   @signature("@any")
-  def eval(self, args):
-    return self.rt.eval(args[0])
+  def eval(self, scope, args):
+    return self.rt.eval(scope, args[0])
 
   @signature("@function|primitive @list")
-  def apply(self, args):
+  def apply(self, scope, args):
     quoted = (types.cons(types.mksymbol("quote"), types.cons(i, types.nil)) for i in args[1])
-    return self.rt.invoke(args[0], list(quoted))
+    return self.rt.invoke(scope, args[0], list(quoted))
 
   @signature("lambda", "list &")
-  def lambda_func(self, args):
+  def lambda_func(self, scope, args):
     sig = list(args[0])
     body = types.mklist(args[1])
 
@@ -226,10 +226,10 @@ class Primitives(dict):
       if not types.is_symbol(arg):
         raise LispException("argument 1 of lambda must be a list of symbols, found %s" % types.type_name(arg))
 
-    return types.mkfunc(sig, body)
+    return types.mkfunc(sig, body, scope)
 
   @signature("list &")
-  def macro(self, args):
+  def macro(self, scope, args):
     sig = list(args[0])
     body = types.mklist(args[1])
 
@@ -237,20 +237,20 @@ class Primitives(dict):
       if not types.is_symbol(arg):
         raise LispException("argument 1 of lambda must be a list of symbols, found %s" % types.type_name(arg))
 
-    return types.mkmacro(sig, body)
+    return types.mkmacro(sig, body, scope)
 
   @signature("@callable @any @list")
-  def foldr(self, args):
+  def foldr(self, scope, args):
     (func, acc, l) = args
     for el in l:
-      acc = self.rt.invoke(func, [acc, el])
+      acc = self.rt.invoke(scope, func, [acc, el])
     return acc
 
   @signature("@callable @any @list")
-  def foldl(self, args):
+  def foldl(self, scope, args):
     (func, acc, l) = args
     for el in reversed(list(l)):
-      acc = self.rt.invoke(func, [acc, el])
+      acc = self.rt.invoke(scope, func, [acc, el])
     return acc
 
 
@@ -265,14 +265,14 @@ def signature_fixture():
 def test_signature_passthrough():
   invoke = signature_fixture()
   @signature("*")
-  def passthrough(self, args):
+  def passthrough(self, scope, args):
     assert args == ["foo", "bar"]
   invoke(passthrough, ["foo", "bar"])
 
 def test_signature_type_checking():
   invoke = signature_fixture()
   @signature("string number")
-  def type_check(self, args):
+  def type_check(self, scope, args):
     assert types.is_string(args[0])
     assert types.is_number(args[1])
   invoke(type_check, [types.py_to_type("ohai"),
@@ -290,7 +290,7 @@ def test_signature_type_checking():
 def test_signature_argument_resolution():
   invoke = signature_fixture()
   @signature("@any")
-  def resolve_arg(self, args):
+  def resolve_arg(self, scope, args):
     assert types.is_nil(args[0])
   invoke(resolve_arg, [types.mksymbol("nil")])
   with pytest.raises(LispException):
@@ -299,7 +299,7 @@ def test_signature_argument_resolution():
 def test_signature_rest_argument():
   invoke = signature_fixture()
   @signature("any &")
-  def rest(self, args):
+  def rest(self, scope, args):
     assert len(args) == 2
     assert types.is_nil(args[0])
     assert isinstance(args[1], list)
@@ -313,7 +313,7 @@ def test_signature_rest_argument_with_resolution():
   invoke.rt.define("ohai", types.py_to_type(13))
   invoke.rt.define("noobs", types.py_to_type(37))
   @signature("any @&")
-  def rest(self, args):
+  def rest(self, scope, args):
     assert len(args) == 2
     assert types.is_nil(args[0])
     assert isinstance(args[1], list)

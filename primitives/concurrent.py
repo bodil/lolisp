@@ -18,9 +18,18 @@ class Ref(types.Type):
     self.condition.notifyAll()
     self.condition.release()
 
+  def fail(self):
+    self.realise(False)
+
   def realised(self):
     self.condition.acquire()
-    rv = not self.refval == None
+    rv = not self.refval is None
+    self.condition.release()
+    return rv
+
+  def failed(self):
+    self.condition.acquire()
+    rv = self.refval is False
     self.condition.release()
     return rv
 
@@ -30,6 +39,8 @@ class Ref(types.Type):
       self.condition.wait()
     rv = self.refval
     self.condition.release()
+    if rv is False:
+      return types.mksymbol("failed")
     return rv
 
   def __repr__(self):
@@ -39,7 +50,7 @@ class Ref(types.Type):
       return "<ref=unrealised>"
 
 @extend("@Ref")
-def deref(self, args):
+def deref(self, scope, args):
   ref = args[0]
   return ref.deref()
 
@@ -52,17 +63,23 @@ class FutureWorker(threading.Thread):
 
   def run(self):
     rv = types.nil
-    for form in self.forms:
-      rv = self.rt.eval(form)
-    self.ref.realise(rv)
+    try:
+      for form in self.forms:
+        print "Exec:", form
+        rv = self.rt.eval(form)
+      self.ref.realise(rv)
+    except LispException:
+      import traceback
+      traceback.print_exc()
+      self.ref.realise(types.nil)
 
 @extend("&")
-def future(self, args):
+def future(self, scope, args):
   f = FutureWorker(self.rt, args[0])
   f.start()
   return f.ref
 
 @extend("@number")
-def sleep(self, args):
+def sleep(self, scope, args):
   time.sleep(args[0].value)
   return types.nil

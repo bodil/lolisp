@@ -89,4 +89,10 @@
 ;; (is (= "o" (car "ohai")))
 ;; (is (= "hai" (cdr "ohai")))
 
+;; Scope
+(defn test-partial (func arg1)
+  (lambda (arg2) (+ arg1 arg2)))
+(define test-add3 (test-partial + 3))
+(is (= 5 (test-add3 2)))
+
 (print "All tests done.")
