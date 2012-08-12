@@ -161,8 +161,10 @@ def test_mksymbol():
 true = mksymbol("true")
 false = mksymbol("false")
 
-def mkprimitive(name):
-  return Type("primitive", name)
+def mkprimitive(name, func):
+  p = Type("primitive", name)
+  p.invoke = func
+  return p
 
 def mkfunc(sig, body):
   return Type("function", body, sig = sig)

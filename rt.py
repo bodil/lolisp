@@ -2,47 +2,63 @@ import lisptypes as types
 from load import load
 from primitives import Primitives
 from errors import LispException
+import threading
 
 class Scope(dict):
-  def __init__(self, parent):
+  def __init__(self, parent = None, extend = {}):
     dict.__init__(self)
     self.parent = parent
+    self.lock = threading.Lock()
+    self.extend(extend)
+
+  def define(self, symbol, value):
+    if types.is_symbol(symbol):
+      symbol = symbol.value
+    self.lock.acquire()
+    self[symbol] = value
+    self.lock.release()
+    return value
+
+  def extend(self, d):
+    for key in d:
+      self.define(key, d[key])
 
   def lookup(self, key):
+    rv = None
+    self.lock.acquire()
     if self.has_key(key):
-      return self[key]
-    if self.parent:
-      return self.parent.lookup(key)
-    else:
-      return None
+      rv = self[key]
+    elif self.parent:
+      rv = self.parent.lookup(key)
+    self.lock.release()
+    return rv
 
 class RT(object):
-  def __init__(self):
-    self.ns = Scope(None)
+  def __init__(self, ns = None):
+    if ns:
+      self.ns = ns
+    else:
+      prims = Primitives(self)
+
+      import primitives.math
+      prims.extend(primitives.math)
+      import primitives.concurrent
+      prims.extend(primitives.concurrent)
+
+      self.ns = Scope(extend = prims)
     self.scope = self.ns
 
-    self.define("nil", types.nil)
-    self.define("true", types.true)
-    self.define("false", types.false)
-    self.define("else", types.true)
-
-    self.primitives = Primitives(self)
-    import primitives.math
-    self.primitives.extend(primitives.math)
+  def clone(self):
+    return RT(ns = self.ns)
 
   def lookup(self, symbol):
     value = self.scope.lookup(symbol.value)
     if value:
       return value
-    if self.primitives.has_key(symbol.value):
-      return types.mkprimitive(symbol.value)
     raise LispException("symbol \"%s\" is undefined" % symbol.value)
 
   def define(self, symbol, value):
-    if types.is_symbol(symbol):
-      symbol = symbol.value
-    self.ns[symbol] = value
-    return value
+    return self.ns.define(symbol, value)
 
   def eval(self, exp):
     """
@@ -61,7 +77,7 @@ class RT(object):
     args = list(args)
 
     if types.is_primitive(func):
-      return self.primitives[func.value](args)
+      return func.invoke(args)
 
     closure = Scope(self.scope)
     args = list(args)

@@ -41,19 +41,29 @@ def extend(*params):
 def wrap_external(primitives, fn):
   return lambda args: fn(primitives, args)
 
+def match_class(classes, name):
+  for c in classes:
+    if name == c.__name__ or match_class(c.__bases__, name):
+      return True
+  return False
+
 class Primitives(dict):
   def __init__(self, rt):
     self.rt = rt
+    self["nil"] = types.nil
+    self["true"] = types.true
+    self["false"] = types.false
+    self["else"] = types.true
     self.extend(self)
 
   def extend(self, package):
     for key in dir(package):
       fn = getattr(package, key)
       if hasattr(fn, "primitive_name"):
+        name = fn.primitive_name
         if hasattr(fn, "external"):
-          self[fn.primitive_name] = wrap_external(self, fn)
-        else:
-          self[fn.primitive_name] = fn
+          fn = wrap_external(self, fn)
+        self[name] = types.mkprimitive(name, fn)
 
   def parse_sig(self, fn, args, signature):
     if signature == "*":
@@ -85,9 +95,13 @@ class Primitives(dict):
       if sig != "any":
         matched = False
         for t in sig.split("|"):
-          test = getattr(types, "is_%s" % t)
-          if test(arg):
-            matched = True
+          if t.islower():
+            test = getattr(types, "is_%s" % t)
+            if test(arg):
+              matched = True
+          else:
+            if match_class([arg.__class__], t):
+              matched = True
         if not matched:
           raise LispException("argument %d of %s must be %s, was %s" %
                               (len(out) + 1, fn, sig,

@@ -27,7 +27,7 @@ def load(stream):
     elif token["type"] in ["quote", "unquote"]:
       pass
     elif token["type"] == "deref":
-      if last["type"] == "unquote":
+      if last and last["type"] == "unquote":
         token["type"] = "unquote-splice"
     else:
       if last and last["type"] in ["quote", "unquote", "unquote-splice", "deref"]:
