@@ -47,14 +47,6 @@ def conj(l, e):
       return cons(l.car, rec(l.cdr))
   return rec(l)
 
-def test_conj():
-  l = cons(Type("number", 3), nil)
-  l = cons(Type("number", 3), l)
-  l = cons(Type("number", 1), l)
-  l = cons(Type("number", 3), l)
-  assert repr(l) == "(3 1 3 3)"
-  assert repr(conj(l, Type("number", 7))) == "(3 1 3 3 7)"
-
 class Type(object):
   def __init__(self, type, value, sig = None, scope = None, token = None):
     self.type = type
@@ -90,27 +82,11 @@ class Type(object):
 def is_list(i):
   return isinstance(i, ConsCell)
 
-def test_is_list():
-  assert is_list(nil)
-  assert is_list(cons(Type("number", 1337), nil))
-  assert not is_list(Type("string", "ohai"))
-
 def is_nil(i):
   return is_list(i) and i.is_nil()
 
-def test_is_nil():
-  assert is_nil(nil)
-  assert not is_nil(Type("string", "ohai"))
-  assert not is_nil(cons(Type("number", 1337), nil))
-
 def is_atomic(i):
   return is_nil(i) or isinstance(i, Type)
-
-def test_is_atom():
-  assert is_atomic(nil)
-  assert is_atomic(Type("string", "ohai"))
-  assert not is_atomic(cons(Type("number", 1337), nil))
-  assert not is_atomic("ohai")
 
 def is_symbol(i):
   return isinstance(i, Type) and i.type == "symbol"
@@ -140,11 +116,6 @@ def type_name(i):
   else:
     return "unknown"
 
-def test_type_name():
-  assert type_name(Type("string", "ohai")) == "string"
-  assert type_name(nil) == "nil"
-  assert type_name(cons(Type("string", "ohai"), nil)) == "list"
-
 def token_to_type(token):
   if token["type"] == "string":
     return Type("string", token["value"][1:-1], token = token)
@@ -155,10 +126,6 @@ def token_to_type(token):
 
 def mksymbol(name):
   return Type("symbol", name)
-
-def test_mksymbol():
-  assert is_symbol(mksymbol("ohai"))
-  assert mksymbol("ohai").value == "ohai"
 
 true = mksymbol("true")
 false = mksymbol("false")
@@ -193,28 +160,3 @@ def py_to_type(obj):
     return mklist(map(py_to_type, obj))
   else:
     raise TypeError("object %s cannot be converted to a Lisp type" % repr(obj))
-
-def test_py_to_type_boolean():
-  assert is_symbol(py_to_type(True))
-  assert py_to_type(True).value == "true"
-  assert is_symbol(py_to_type(False))
-  assert py_to_type(False).value == "false"
-
-def test_py_to_type_string():
-  assert is_string(py_to_type("ohai"))
-  assert py_to_type("ohai").value == "ohai"
-
-def test_py_to_type_number():
-  assert is_number(py_to_type(1337))
-  assert py_to_type(1337).value == 1337
-
-def test_py_to_type_list():
-  assert repr(py_to_type([1,2,3])) == "(1 2 3)"
-
-def test_deep_mklist():
-  l = py_to_type([1,[2]])
-  assert repr(l) == "(1 (2))"
-
-def test_pprint():
-  out = repr(py_to_type([1,2,3,"ohai",True,[1,3,3,7]]))
-  assert out == "(1 2 3 \"ohai\" true (1 3 3 7))"
