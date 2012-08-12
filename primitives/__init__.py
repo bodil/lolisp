@@ -145,10 +145,14 @@ class Primitives(dict):
 
   @signature("@list")
   def car(self, args):
+    if types.is_nil(args[0]):
+      return types.nil
     return args[0].car
 
   @signature("@list")
   def cdr(self, args):
+    if types.is_nil(args[0]):
+      return types.nil
     return args[0].cdr
 
   @signature("symbol @any")

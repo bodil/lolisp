@@ -20,6 +20,14 @@
 (is (not (= 1337 "1337")))
 (is (not (= 'symbol "symbol")))
 
+;; Lists
+(is (= 1 (car '(1 2 3))))
+(is (= '(2 3) (cdr '(1 2 3))))
+(is (= nil (car nil)))
+(is (= nil (cdr nil)))
+(is (= nil (cdr '(1337))))
+(is (= '(1 2 3) (cons 1 '(2 3))))
+
 ;; Boolean logic
 (is (and true true))
 (is (not (and true false)))
