@@ -40,3 +40,19 @@ def is_decimal(self, scope, args):
 @extend("fraction?", "@any")
 def is_fraction(self, scope, args):
   return types.py_to_type(types.is_number(args[0]) and isinstance(args[0].value, Fraction))
+
+@extend("<", "@number @number")
+def less_than(self, scope, args):
+  return types.py_to_type(args[0].value < args[1].value)
+
+@extend("<=", "@number @number")
+def less_than_or_equal(self, scope, args):
+  return types.py_to_type(args[0].value <= args[1].value)
+
+@extend(">", "@number @number")
+def greater_than(self, scope, args):
+  return types.py_to_type(args[0].value > args[1].value)
+
+@extend(">=", "@number @number")
+def greater_than_or_equal(self, scope, args):
+  return types.py_to_type(args[0].value >= args[1].value)
