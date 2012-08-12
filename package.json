@@ -1,8 +1,0 @@
-{
-  "name": "lolisp",
-  "version": "0.0.1",
-  "dependencies": {
-    "underscore": "1.3.3",
-    "optimist": "0.3.4"
-  }
-}

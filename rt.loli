@@ -32,6 +32,23 @@
 (defmacro let (bindings & body)
   (let-fn bindings body))
 
+;; boolean logic
+
+(define not
+  (lambda (x)
+    (cond (x false)
+          (true true))))
+
+(defmacro and (x & rest)
+  (cond ((nil? rest) x)
+        (true '(let ((v ~x))
+                 (cond (v (and ~@rest)) (true v))))))
+
+(defmacro or (x & rest)
+  (cond ((nil? rest) x)
+        (true '(let ((v ~x))
+                 (cond (v v) (true (or ~@rest)))))))
+
 ;; map/reduce
 
 (defn map (f l)
@@ -53,3 +70,12 @@
   (macro (form)
     '(cond ((not ~form)
             (print "Assertion failed:" (quote ~form))))))
+
+;; math
+
+(defn even? (n)
+  (cond ((and (int? n) (= 0 (rem n 2))) true)
+        (true false)))
+
+(defn odd? (n)
+  (not (even? n)))
