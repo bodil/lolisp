@@ -112,3 +112,11 @@
 ;; Tail recursion
 (defn fac (n) (cond ((< n 2) n) (true (* n (recur (- n 1))))))
 (is (= 120 (fac 5)))
+
+;; Cond
+(define test-cond "foo")
+(is (= "xyzzy" (cond ((= test-cond "bar") "wibble")
+                     ((= test-cond "foo") "xyzzy"))))
+(is (= "xyzzy" (cond ((= test-cond "bar") "wibble")
+                     ((= test-cond "lol") "flarp")
+                     (true "xyzzy"))))
