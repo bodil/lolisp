@@ -5,8 +5,9 @@ from errors import LispException
 import threading
 
 class Scope(dict):
-  def __init__(self, parent = None, extend = {}):
+  def __init__(self, callable = None, parent = None, extend = {}):
     dict.__init__(self)
+    self.callable = callable
     self.parent = parent
     self.lock = threading.Lock()
     self.extend(extend)
@@ -72,7 +73,7 @@ class RT(object):
     else:
       return exp
 
-  def invoke(self, scope, func, args):
+  def invoke(self, scope, func, args, tailrec = False):
     args = list(args)
 
     if types.is_primitive(func):
@@ -91,7 +92,7 @@ class RT(object):
         raise LispException("%s takes at least %d arguments, %d given" %
                             (types.type_name(func), rest, len(args)))
 
-    closure = Scope(func.scope)
+    closure = scope if tailrec else Scope(func, func.scope)
     for i in xrange(len(args)):
       if func.sig[i].value == "&":
         closure.define(func.sig[rest+1].value,

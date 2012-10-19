@@ -250,3 +250,8 @@ class Primitives(dict):
     for el in reversed(list(l)):
       acc = self.rt.invoke(scope, func, [acc, el])
     return acc
+
+  @signature("*")
+  def recur(self, scope, args):
+    args = map(lambda x: self.rt.eval(scope, x), args)
+    return self.rt.invoke(scope, scope.callable, args, tailrec = True)

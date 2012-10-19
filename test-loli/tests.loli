@@ -108,3 +108,7 @@
 (is (= 1337 @test-future))
 (define test-failing-future (future really-not-defined))
 (is (= 'failed @test-failing-future))
+
+;; Tail recursion
+(defn fac (n) (cond ((< n 2) n) (true (* n (recur (- n 1))))))
+(is (= 120 (fac 5)))
