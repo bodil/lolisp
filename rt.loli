@@ -7,6 +7,10 @@
 (defmacro defn (name args & body)
   '(define ~name (lambda ~args ~@body)))
 
+;; identity
+
+(defn identity (x) x)
+
 ;; c[a|d]+r
 
 (defn cadr (l) (car (cdr l)))
@@ -34,10 +38,9 @@
 
 ;; boolean logic
 
-(define not
-  (lambda (x)
-    (cond (x false)
-          (else true))))
+(defn not (x)
+  (cond (x false)
+        (else true)))
 
 (defmacro and (x & rest)
   (cond ((nil? rest) x)
@@ -64,12 +67,29 @@
   (cond ((nil? acc) (foldr f (f (car l) (cadr l)) (cddr l)))
         (else (foldr f (car acc) l))))
 
+;; lists
+
+(defn list? (v) (or (not (atomic? v)) (nil? v)))
+
+(defn append (& lists)
+  (reduce (lambda (a b) (foldl (lambda (tail head) (cons head tail)) b a)) lists))
+
+(defn reverse (l)
+  (foldr (lambda (a b) (cons b a)) nil l))
+
+;; associative lists
+
+(defn assq (key alist)
+  (cond
+   ((atomic? alist) nil)
+   ((and (list? (car alist)) (= key (car (car alist)))) (car alist))
+   (true (recur key (cdr alist)))))
+
 ;; testing
 
-(define is
-  (macro (form)
-    '(cond ((not ~form)
-            (print "Assertion failed:" (quote ~form))))))
+(defmacro is (form)
+  '(cond ((not ~form)
+          (print "Assertion failed:" (quote ~form)))))
 
 ;; math
 
