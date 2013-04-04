@@ -2,7 +2,6 @@
 
 from load import load
 from rt import RT, LispException
-import lisptypes as types
 
 import sys, os.path
 from argparse import ArgumentParser

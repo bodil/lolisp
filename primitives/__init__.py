@@ -210,9 +210,15 @@ class Primitives(dict):
   def eval(self, scope, args):
     return self.rt.eval(scope, args[0])
 
+  @signature("require", "@string")
+  def require(self, scope, args):
+    self.rt.load(self.rt.ns, file(args[0].value))
+    return types.nil
+
   @signature("@function|primitive @list")
   def apply(self, scope, args):
-    quoted = (types.cons(types.mksymbol("quote"), types.cons(i, types.nil)) for i in args[1])
+    # quoted = (types.cons(types.mksymbol("quote"), types.cons(i, types.nil)) for i in args[1])
+    quoted = args[1]
     return self.rt.invoke(scope, args[0], list(quoted))
 
   @signature("lambda", "list &")
