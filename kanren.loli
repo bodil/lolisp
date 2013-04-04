@@ -1,0 +1,92 @@
+(defn fail (x) nil)
+(defn succeed (x) (cons x nil))
+
+(defn disj (f1 f2) (lambda (x) (append (f1 x) (f2 x))))
+(defn conj (f1 f2) (lambda (x) (apply append (map f2 (f1 x)))))
+
+
+(defn var (name) '(logic-var ~name))
+(defn var? (v) (cond ((list? v) (= 'logic-var (car v))) (true false)))
+
+(define empty-subst nil)
+(defn ext-s (var value s) (cons (cons var value) s))
+
+(defn lookup (var s)
+  (cond
+   ((not (var? var)) var)
+   ((not (nil? (assq var s))) (lookup (cdr (assq var s)) s))
+   (true var)))
+
+(defn unify (t1 t2 s)
+  (let ((t1 (lookup t1 s))
+        (t2 (lookup t2 s)))
+    (cond
+     ((= t1 t2) s)
+     ((var? t1) (ext-s t1 t2 s))
+     ((var? t2) (ext-s t2 t1 s))
+     ((and (list? t1) (list? t2))
+      (let ((s (unify (car t1) (car t2) s)))
+        (cond
+         ((= false s) s)
+         (true (unify (cdr t1) (cdr t2) s)))))
+     (true false))))
+
+(define vx (var 'x))
+(define vy (var 'y))
+(define vz (var 'z))
+(define vq (var 'q))
+
+(defn == (t1 t2)
+  (lambda (s)
+    (let ((r (unify t1 t2 s)))
+      (cond
+       ((= false r) (fail r))
+       (true (succeed r))))))
+
+(defn choice (var lst)
+  (cond
+   ((nil? lst) fail)
+   (true (disj
+          (== var (car lst))
+          (choice var (cdr lst))))))
+
+(defn common-el (l1 l2) (conj (choice vx l1) (choice vx l2)))
+
+(defn conso (a b l) (== (cons a b) l))
+
+(defn conj*-expand (gs)
+  (cond
+   ((nil? gs) 'succeed)
+   ((nil? (cdr gs)) (car gs))
+   (true '(conj ~(car gs)
+                (lambda (s)
+                  (~(conj*-expand (cdr gs)) s))))))
+
+(defmacro conj* (& gs)
+  (conj*-expand gs))
+
+(defn disj* (& gs)
+  (cond
+   ((nil? gs) fail)
+   (true (disj (car gs) (apply disj* (cdr gs))))))
+
+(defn appendo (l1 l2 l3)
+  (disj
+   (conj* (== l1 nil) (== l2 l3))
+   (let ((h (var 'h)) (t (var 't))
+         (l3p (var 'l3p)))
+     (conj*
+      (conso h t l1)
+      (conso h l3p l3)
+      (appendo t l2 l3p)))))
+
+(defn lookup* (var s)
+  (let ((v (lookup var s)))
+    (cond
+     ((var? v) v)
+     ((not (atomic? v))
+      (cons (lookup* (car v) s)
+            (lookup* (cdr v) s)))
+     (true v))))
+
+(defn run (g) (map (lambda (s) (lookup* vq s)) (g empty-subst)))
